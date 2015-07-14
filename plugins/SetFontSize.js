@@ -1,7 +1,7 @@
-﻿
+
 //sValidation=nyfjs
 //sCaption=Set Font Size
-//sHint=Set Font Size 02062015
+//sHint=Set Font Size 09072015
 //sCategory=Context.HtmlEdit
 //sPosition=XZ-255
 //sCondition=CURDB; DBRW; CURINFOITEM; HTMLEDIT
@@ -9,6 +9,11 @@
 //sAppVerMin=7.0
 //sShortcutKey=
 //sAuthor=Xia Zhang
+
+/////////////////////////////////////////////////////////////////////
+// Extension scripts for myBase Desktop v7.x
+// Copyright 2015 Xia Zhang (MIT Licensed)
+/////////////////////////////////////////////////////////////////////
 
 var _lc=function(sTag, sDef){return plugin.getLocaleMsg(sTag, sDef);};
 var _lc2=function(sTag, sDef){return _lc(plugin.getLocaleID()+'.'+sTag, sDef);};
@@ -21,16 +26,29 @@ try{
 	if(xNyf.isOpen()){
 		if(!xNyf.isReadonly()){
 			if(plugin.isContentEditable()){
-				//get selected text
+				var sCfgKey='gzhaha.SetFontSize';
+				
+				//get text
 				var sCon = plugin.getTextContent(-1, true);
-				var sSiz = prompt('Input Font Size (5-40)：', '16', 'Input Font Size');
-				if (sSiz>=5 && sSiz<=40){
-					var html = sCon.replace(/font-size:(.*?)pt|font-size:(.*?)px/g, 'font-size: '+ sSiz + 'pt')
-					plugin.setTextContent(-1, html, true);
-					plugin.setDomDirty(-1, true);
-				}
-				else{
-					alert("Value should be 5-40!")
+				var sSiz = prompt('Input Font Size (5-40):', localStorage.getItem(sCfgKey)||'16', 'Input Font Size');
+				if (sSiz){
+					if (sSiz>=5 && sSiz<=40){
+						//save to ini file
+						localStorage.setItem(sCfgKey, sSiz);
+						
+						//match px, pt, %
+						var regx = /font-size:( |)\d{1,2}(|\.\d+)(| )pt|font-size:( |)\d{1,2}(|\.\d+)(| )px|font-size:( |)\d{1,3}(| )%/g;
+						var html = sCon.replace(regx, 'font-size: '+ sSiz + 'pt');
+
+						//2015.6.12 'setHTML' clears DOM entirely including UNDO stack, so it'd be worth to first save current modifications as a history revision for UNDOable;
+						plugin.commitCurrentChanges();
+
+						plugin.setTextContent(-1, html, true);
+						plugin.setDomDirty(-1, true);
+					}
+					else{
+						alert("Font Size should be 5-40!");
+					}
 				}
 			}else{
 				alert(_lc('Prompt.Warn.ReadonlyContent', 'Cannot modify the content opened as Readonly.'));

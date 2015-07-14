@@ -1,11 +1,11 @@
 ﻿
 //sValidation=nyfjs
-//sCaption=Word Count
-//sHint=Word Count 02062015
+//sCaption=Save to Quick Text
+//sHint=Save selected Text to Quick Text 16062015
 //sCategory=MainMenu.TxtUtils
 //sPosition=XZ-255
 //sCondition=CURDB; DBRW; CURINFOITEM; HTMLEDIT; HTMLSELECTED
-//sID=p.gzhaha.WordCount
+//sID=p.gzhaha.SaveText2QuickTextFile
 //sAppVerMin=7.0
 //sShortcutKey=
 //sAuthor=Xia Zhang
@@ -26,13 +26,20 @@ try{
 	if(xNyf.isOpen()){
 		if(!xNyf.isReadonly()){
 			if(plugin.isContentEditable()){
-				//get selected text
+				//get selected text from info item edit area
 				var sCon = plugin.getSelectedText(-1, false);
 				
-				//run function
-				var html = fnWordCount(sCon);
-
-				alert('Words Count：' + html + ' words')
+				try{
+					var sFn=platform.getSaveFileName({sTitle: 'Select Quick Text File', sFilter: 'Quick Text files(*.q.txt);;Text files(*.txt)'});
+					var f=new CLocalFile(sFn);
+					var nBytes=f.saveUtf8(sCon);
+					if(nBytes>=0){
+						alert('Saved Successfully!');
+					}
+				}
+				catch(e){
+					alert(e);
+				}				
 			}else{
 				alert(_lc('Prompt.Warn.ReadonlyContent', 'Cannot modify the content opened as Readonly.'));
 			}
@@ -44,20 +51,4 @@ try{
 	}
 }catch(e){
 	alert(e);
-}
-
-//Words Count：
-//http://blog.csdn.net/gavid0124/article/details/38117381
-function fnWordCount(str){
-	sLen = 0;
-	try{
-   		str = str.replace(/(\r\n+|\s+|　+)/g,"龘");
-		str = str.replace(/[\x00-\xff]/g,"m");	
-		str = str.replace(/m+/g,"*");
-		str = str.replace(/龘+/g,"");
-		sLen = str.length;
-	}catch(e){
-		
-	}
-	return sLen;
 }
